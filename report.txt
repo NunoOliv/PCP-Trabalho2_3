@@ -1,0 +1,40 @@
+QUICKSORT
+
+qsub -I -lnodes=2:ppn=48:r641:walltime=1:00:00
+qsub -I -lnodes=2:ppn=48:r662:walltime=1:00:00
+
+module load gnu/openmpi_eth/1.8.4
+
+usar map-by
+
+
+mpiriun -n 48 -mca btl self,sm,tcp prog
+
+
+ver:
+https://www.open-mpi.org/doc/v1.8/man1/mpirun.1.php		map-by
+https://www.open-mpi.org/faq/?category=tuning			mpirun
+
+
+To do list:
+
+Fazer me vários nós
+Comparar com só um nó
+Comparar em 2 maquinas. (641 662)
+Comparar com implementação OpenMP
+
+Medir:
+	Escalabilidade
+	Custos de Comunicação (como, não sei)
+	Grau de Balanceamento entre a carga dos vários processos.
+
+
+Relatório de 4 páginas + Código
+
+
+Parametros: (20% para cada)
+	Analise teorica do algoritmo
+	Desenho e implementação da versao MPI
+	Qualidade e quantidade de experimentação
+	Analise dos resultados
+	Relatório
