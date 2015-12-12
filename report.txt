@@ -1,7 +1,7 @@
 QUICKSORT
 
-qsub -I -lnodes=2:ppn=48:r641:walltime=1:00:00
-qsub -I -lnodes=2:ppn=48:r662:walltime=1:00:00
+qsub -I -lnodes=2:ppn=48:r641,walltime=1:00:00
+qsub -I -lnodes=2:ppn=48:r662,walltime=1:00:00
 
 module load gnu/openmpi_eth/1.8.4
 
@@ -13,7 +13,7 @@ mpiriun -n 48 -mca btl self,sm,tcp prog
 
 ver:
 https://www.open-mpi.org/doc/v1.8/man1/mpirun.1.php		map-by
-https://www.open-mpi.org/faq/?category=tuning			mpirun
+https://www.open-mpi.org/faq/?category=tuning					mpirun
 
 
 To do list:
