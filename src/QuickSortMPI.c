@@ -4,11 +4,13 @@
 #include <stdlib.h>
 #include <mpi.h>
 
+#include <unistd.h>
+
 
 #include "QuicksortSeq.h"
 #include "AuxFuncs.h"
 
-#define ARRAY_SIZE 5*1000*1000 // 5 milhoes +/- 19MB
+#define ARRAY_SIZE 10 // 5 milhoes +/- 19MB
 #define N_THREADS 1
 
 //Comunication Codes
@@ -16,10 +18,9 @@
 #define MAX_MIN_MPI 0
 #define ARRAY_EXCHANGE_MPI 1
 
-int * array;
 
 
-int test (long double sum) {
+int test (int * array, long double sum) {
 //test variables
   long long int sumF=0;
   int lastI=-1;
@@ -40,10 +41,10 @@ int test (long double sum) {
   return correct;
 }
 
-void printArray(){
+void printArray(int * array, int size){
   printf("[%d",array[0]);
   int i=1;
-  while(i<ARRAY_SIZE){
+  while(i<size){
     printf(", %d",array[i]);
     i++;
   }
@@ -56,22 +57,25 @@ int main (int argc, char **argv){
 
   printf("\n\n*******************************************************\n\n");
 
+ //MPI Start
+  MPI_Status status;
+  MPI_Init (&argc, &argv);
+  
   int i=0, j=0;
   long long int sum =0;
   int arraysize;
   int nprocesses;
   int myrank;
+  int * array;
 
-  //MPI Start
-  MPI_Status status;
-  MPI_Init (&argc, &argv);
+ 
 
   MPI_Comm_size (MPI_COMM_WORLD, &nprocesses);
   MPI_Comm_rank (MPI_COMM_WORLD, &myrank);
 
   arraysize = ( ARRAY_SIZE)/nprocesses;
   //Rand
-  srand(time(NULL));
+  srand((unsigned)time(NULL)*myrank*nprocesses);
 
   //alloc array
   array=(int *)malloc( sizeof(int) * arraysize);
@@ -83,8 +87,8 @@ int main (int argc, char **argv){
     sum += array[i];
     i++;
   }
-
-  //printArray();
+  printf("myRank =%d",myrank);
+  printArray(array, arraysize);
 /*
   printf("Concluido!\n");
   printf("Tamanho do array: ");
@@ -109,10 +113,11 @@ int main (int argc, char **argv){
 
 
 	if (myrank == 0) {
+		sleep(10);
 		int * auxArray = (int *) malloc(sizeof(int)*2*nprocesses);
 		j=0;
 		for(i=1;i<nprocesses;i++) {
-			MPI_Recv( maxMin, 2, MPI_INT, i, MAX_MIN_MPI, MPI_COMM_WORLD, &status );
+			MPI_Recv( &maxMin[0], 2, MPI_INT, i, MAX_MIN_MPI, MPI_COMM_WORLD, &status );
 			auxArray[j++] = maxMin[0];
 			auxArray[j++] = maxMin[1];
 		}
@@ -121,19 +126,22 @@ int main (int argc, char **argv){
 
 		//send new max and min
 		for(i=1;i<nprocesses;i++) {
-			MPI_Send( maxMin, 2, MPI_INT, i, MAX_MIN_MPI, MPI_COMM_WORLD);
+			MPI_Send( &maxMin[0], 2, MPI_INT, i, MAX_MIN_MPI, MPI_COMM_WORLD);
 		}
 		free(auxArray);
 
 	} else {
 		//Find Local Max and Min
 		maxAndMinArray(array, arraysize, maxMin[0], maxMin[1]);
+		printf("max= %d\nMin=%d\n", maxMin[0], maxMin[1]);
 		//Send local Max and Min
-		MPI_Send( maxMin, 2, MPI_INT, 0, MAX_MIN_MPI, MPI_COMM_WORLD);
+		MPI_Send( &maxMin[0], 2, MPI_INT, 0, MAX_MIN_MPI, MPI_COMM_WORLD);
 		//Receive global max and min
-		MPI_Recv( maxMin, 2, MPI_INT, 0, MAX_MIN_MPI, MPI_COMM_WORLD, &status );
+		MPI_Recv( &maxMin[0], 2, MPI_INT, 0, MAX_MIN_MPI, MPI_COMM_WORLD, &status );
 
 	}
+	
+	printf("FInished MaxMin");
 
 	//Find Splits
 	int * arrayNew;
@@ -197,7 +205,7 @@ int main (int argc, char **argv){
 
 
 		 } else {
-       MPI_Send(splitArray[i] , splitArrayCounter[i], MPI_INT, i, MAX_MIN_MPI, MPI_COMM_WORLD);
+       MPI_Send(&splitArray[i][0] , splitArrayCounter[i], MPI_INT, i, MAX_MIN_MPI, MPI_COMM_WORLD);
      }
 
      free(splitArray[i]);
@@ -215,7 +223,7 @@ int main (int argc, char **argv){
  // cout << "Concluido em " << duration << "microsegundos";
   printf("A iniciar funÃ§Ã£o de teste...\n");
 
-  int r=test(sum);
+  int r=test(array, sum);
 
   printf("Concluido!\n");
   if (r==0) printf("Incorreto\n");
