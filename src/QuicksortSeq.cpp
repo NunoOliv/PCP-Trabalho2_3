@@ -19,8 +19,8 @@ void quicksort(int* array,int lo,int hi){
     }while(i<=j); 
     {
       {      
-        if(lo<j) quicksort(lo,j);
-        if(i<hi) quicksort(i,hi);
+        if(lo<j) quicksort(array,lo,j);
+        if(i<hi) quicksort(array,i,hi);
       }
     }
 }

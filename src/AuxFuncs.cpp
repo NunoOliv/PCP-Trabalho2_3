@@ -11,7 +11,7 @@ void maxAndMinArray(int *array, int size, int max, int min) {
 			}
 	}
 }
-
+/*
 void numbersInStep(int *array, int size, int min, int max, int nSize) {
 	int i;
 	number=0;
@@ -20,3 +20,4 @@ void numbersInStep(int *array, int size, int min, int max, int nSize) {
 		if(min<=array[i]<max) number++;
 	}
 }
+*/
