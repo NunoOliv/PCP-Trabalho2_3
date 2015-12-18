@@ -1,1 +1,1 @@
-void maxAndMinArray(int *array, int size, int max, int min);
+void maxAndMinArray(int *array, int size, int * maxMin);

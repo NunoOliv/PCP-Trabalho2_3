@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <mpi.h>
 
+#include <unistd.h>
+
 
 #include "QuicksortSeq.h"
 #include "AuxFuncs.h"
@@ -53,23 +55,28 @@ void printArray(int * array, int size){
 
 int main (int argc, char **argv){
 
-  printf("\n\n*******************************************************\n\n");
+  //printf("\n\n*******************************************************\n\n");
 
- //MPI Start
+ 
+
+  //MPI Start
   MPI_Status status;
   MPI_Init (&argc, &argv);
+
+  int nprocesses;
+  int myrank;
+  
+  MPI_Comm_size (MPI_COMM_WORLD, &nprocesses);
+  MPI_Comm_rank (MPI_COMM_WORLD, &myrank);
   
   int i=0, j=0;
   long long int sum =0;
   int arraysize;
-  int nprocesses;
-  int myrank;
+ 
+ 
   int * array;
 
- 
 
-  MPI_Comm_size (MPI_COMM_WORLD, &nprocesses);
-  MPI_Comm_rank (MPI_COMM_WORLD, &myrank);
 
   arraysize = ( ARRAY_SIZE)/nprocesses;
   //Rand
@@ -103,7 +110,7 @@ int main (int argc, char **argv){
 
  // high_resolution_clock::time_point t1 = high_resolution_clock::now();
 
-	int maxMin[2];
+	int * maxMin = (int *)malloc(sizeof(int)*2);
 
 
 
@@ -111,31 +118,41 @@ int main (int argc, char **argv){
 
 
 	if (myrank == 0) {
-		sleep(10);
+		//sleep(10);
 		int * auxArray = (int *) malloc(sizeof(int)*2*nprocesses);
 		j=0;
 		for(i=1;i<nprocesses;i++) {
-			MPI_Recv( &maxMin[0], 2, MPI_INT, i, MAX_MIN_MPI, MPI_COMM_WORLD, &status );
+			printf("mASTER try to Recebeu from %d", i);
+			MPI_Recv( &maxMin, 2, MPI_INT, i, MAX_MIN_MPI, MPI_COMM_WORLD, &status );
+			printf("mASTER Recebeu from %d", i);
 			auxArray[j++] = maxMin[0];
 			auxArray[j++] = maxMin[1];
 		}
-		maxAndMinArray(array, arraysize, auxArray[j], auxArray[j+1]);
-		maxAndMinArray(auxArray, nprocesses*2, maxMin[0]+1, maxMin[1]);
+		printf("mASTER REcebeu");
+		maxAndMinArray(array, arraysize, maxMin);
+		printf("mASTER maxmin own array");
+		auxArray[j++] = maxMin[0];
+		auxArray[j++] = maxMin[1];
+		maxAndMinArray(auxArray, nprocesses*2, maxMin);
+		printf("mASTER maxmin own maxminarray");
 
 		//send new max and min
 		for(i=1;i<nprocesses;i++) {
 			MPI_Send( &maxMin[0], 2, MPI_INT, i, MAX_MIN_MPI, MPI_COMM_WORLD);
 		}
+		printf("mASTER sent new maxint");
 		free(auxArray);
 
 	} else {
 		//Find Local Max and Min
-		maxAndMinArray(array, arraysize, maxMin[0], maxMin[1]);
-		printf("max= %d\nMin=%d\n", maxMin[0], maxMin[1]);
+		maxAndMinArray(array, arraysize, maxMin);
+		printf("Please max= %d\nMin=%d\n", maxMin[0], maxMin[1]);
 		//Send local Max and Min
 		MPI_Send( &maxMin[0], 2, MPI_INT, 0, MAX_MIN_MPI, MPI_COMM_WORLD);
+		printf("Slave Enviou");
 		//Receive global max and min
-		MPI_Recv( &maxMin[0], 2, MPI_INT, 0, MAX_MIN_MPI, MPI_COMM_WORLD, &status );
+		MPI_Recv( &maxMin, 2, MPI_INT, 0, MAX_MIN_MPI, MPI_COMM_WORLD, &status );
+		printf("Slave REcebeu");
 
 	}
 	
