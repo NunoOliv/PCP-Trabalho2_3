@@ -38,3 +38,11 @@ Parametros: (20% para cada)
 	Qualidade e quantidade de experimentação
 	Analise dos resultados
 	Relatório
+
+Comandos usados para testar
+
+Compilar:
+	mpicc -O3 -o mpiSort *.c
+
+Correr: 
+	mpirun -np 2 mpiSort

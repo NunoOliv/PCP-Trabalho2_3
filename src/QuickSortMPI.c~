@@ -92,7 +92,7 @@ int main (int argc, char **argv){
     sum += array[i];
     i++;
   }
-  printf("myRank =%d",myrank);
+  printf("myRank =%d, nProcesses = %d",myrank, nprocesses);
   printArray(array, arraysize);
 /*
   printf("Concluido!\n");
@@ -113,12 +113,14 @@ int main (int argc, char **argv){
 	int * maxMin = (int *)malloc(sizeof(int)*2);
 
 
-
+	printf("CHEGUEI");
+	
 	//inform max and min to rank0
 
 
 	if (myrank == 0) {
 		//sleep(10);
+		printf("CHEGUEI");
 		int * auxArray = (int *) malloc(sizeof(int)*2*nprocesses);
 		j=0;
 		for(i=1;i<nprocesses;i++) {
