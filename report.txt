@@ -18,26 +18,26 @@ https://www.open-mpi.org/faq/?category=tuning					mpirun
 
 To do list:
 
-Fazer me vrios ns
-Comparar com s um n
+Fazer me vï¿½rios nï¿½s
+Comparar com sï¿½ um nï¿½
 Comparar em 2 maquinas. (641 662)
-Comparar com implementao OpenMP
+Comparar com implementaï¿½ï¿½o OpenMP
 
 Medir:
 	Escalabilidade
-	Custos de Comunicao (como, no sei)
-	Grau de Balanceamento entre a carga dos vrios processos.
+	Custos de Comunicaï¿½ï¿½o (como, nï¿½o sei)
+	Grau de Balanceamento entre a carga dos vï¿½rios processos.
 
 
-Relatrio de 4 pginas + Cdigo
+Relatï¿½rio de 4 pï¿½ginas + Cï¿½digo
 
 
 Parametros: (20% para cada)
 	Analise teorica do algoritmo
-	Desenho e implementao da versao MPI
-	Qualidade e quantidade de experimentao
+	Desenho e implementaï¿½ï¿½o da versao MPI
+	Qualidade e quantidade de experimentaï¿½ï¿½o
 	Analise dos resultados
-	Relatrio
+	Relatï¿½rio
 
 Comandos usados para testar
 
@@ -46,3 +46,24 @@ Compilar:
 
 Correr:
 	mpirun -np 2 mpiSort
+
+
+	Tamanhos a usar:
+
+	20 KB
+	5.000
+
+  200 KB
+	50.000
+
+  15 MB
+	4.000.000
+
+  152 MB
+	40.000.000
+	
+
+	5000; //20 KB
+  50000; //200 KB
+  4000000; //15 MB
+  40000000; //152 MB
