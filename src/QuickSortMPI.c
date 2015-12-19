@@ -110,22 +110,20 @@ int main (int argc, char **argv){
 
  // high_resolution_clock::time_point t1 = high_resolution_clock::now();
 
-	int * maxMin = (int *)malloc(sizeof(int)*2);
-
-
-	printf("CHEGUEI oi");
-	
+	int maxMin[2] = {0,0};
+		
 	//inform max and min to rank0
 
 
 	if (myrank == 0) {
 		//sleep(10);
-		printf("CHEGUEI");
+		
 		int * auxArray = (int *) malloc(sizeof(int)*2*nprocesses);
+		
 		j=0;
 		for(i=1;i<nprocesses;i++) {
-			printf("mASTER try to Recebeu from %d", i);
-			MPI_Recv( &maxMin, 2, MPI_INT, i, MAX_MIN_MPI, MPI_COMM_WORLD, &status );
+			printf("mASTER try to Recebeu from %d\n", i);
+			MPI_Recv( maxMin, 2, MPI_INT, i, MAX_MIN_MPI, MPI_COMM_WORLD, &status );
 			printf("mASTER Recebeu from %d", i);
 			auxArray[j++] = maxMin[0];
 			auxArray[j++] = maxMin[1];
@@ -150,7 +148,7 @@ int main (int argc, char **argv){
 		maxAndMinArray(array, arraysize, maxMin);
 		printf("Please max= %d\nMin=%d\n", maxMin[0], maxMin[1]);
 		//Send local Max and Min
-		MPI_Send( &maxMin[0], 2, MPI_INT, 0, MAX_MIN_MPI, MPI_COMM_WORLD);
+		MPI_Send( maxMin, 2, MPI_INT, 0, MAX_MIN_MPI, MPI_COMM_WORLD);
 		printf("Slave Enviou");
 		//Receive global max and min
 		MPI_Recv( &maxMin, 2, MPI_INT, 0, MAX_MIN_MPI, MPI_COMM_WORLD, &status );
