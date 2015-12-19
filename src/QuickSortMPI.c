@@ -122,80 +122,94 @@ int main (int argc, char **argv){
 		
 		j=0;
 		for(i=1;i<nprocesses;i++) {
-			printf("mASTER try to Recebeu from %d\n", i);
+			//printf("mASTER try to Recebeu from %d\n", i);
 			MPI_Recv( maxMin, 2, MPI_INT, i, MAX_MIN_MPI, MPI_COMM_WORLD, &status );
-			printf("mASTER Recebeu from %d", i);
+			//printf("mASTER Recebeu from %d, [%d,%d]\n", i, maxMin[0], maxMin[1]);
 			auxArray[j++] = maxMin[0];
 			auxArray[j++] = maxMin[1];
 		}
-		printf("mASTER REcebeu");
+		//printf("mASTER REcebeu\n");
 		maxAndMinArray(array, arraysize, maxMin);
-		printf("mASTER maxmin own array");
+		//printf("mASTER maxmin own array\n");
 		auxArray[j++] = maxMin[0];
 		auxArray[j++] = maxMin[1];
 		maxAndMinArray(auxArray, nprocesses*2, maxMin);
-		printf("mASTER maxmin own maxminarray");
-
+		//printf("mASTER maxmin own maxminarray\n");
+		maxMin[0]+=nprocesses;//batota para garantir que nao explode
 		//send new max and min
 		for(i=1;i<nprocesses;i++) {
-			MPI_Send( &maxMin[0], 2, MPI_INT, i, MAX_MIN_MPI, MPI_COMM_WORLD);
+			MPI_Send( maxMin, 2, MPI_INT, i, MAX_MIN_MPI, MPI_COMM_WORLD);
 		}
-		printf("mASTER sent new maxint");
+		//printf("mASTER sent new maxint\n");
 		free(auxArray);
 
 	} else {
 		//Find Local Max and Min
 		maxAndMinArray(array, arraysize, maxMin);
-		printf("Please max= %d\nMin=%d\n", maxMin[0], maxMin[1]);
+		//printf("%d - Please max= %d\nMin=%d\n", myrank,maxMin[0], maxMin[1]);
 		//Send local Max and Min
 		MPI_Send( maxMin, 2, MPI_INT, 0, MAX_MIN_MPI, MPI_COMM_WORLD);
-		printf("Slave Enviou");
+		//printf("Slave Enviou\n");
 		//Receive global max and min
-		MPI_Recv( &maxMin, 2, MPI_INT, 0, MAX_MIN_MPI, MPI_COMM_WORLD, &status );
-		printf("Slave REcebeu");
+		MPI_Recv( maxMin, 2, MPI_INT, 0, MAX_MIN_MPI, MPI_COMM_WORLD, &status );
+		//printf("Slave REcebeu\n");
 
 	}
 	
-	printf("FInished MaxMin");
+	if(myrank==0) printf("%d - FInished MaxMin [%d,%d] \n", myrank, maxMin[0], maxMin[1]);
 
 	//Find Splits
 	int * arrayNew;
 	int newArraySize=0;
 	int number_amount;
 	int step = (maxMin[0]-maxMin[1])/nprocesses;
+	
+	
+	
+	
   //Split array
 
   int ** splitArray = (int ** ) malloc(sizeof(int*)*nprocesses);
   int * splitArrayCounter = (int *) malloc(sizeof(int)*nprocesses);
   int * splitArrayInc =  (int *) malloc(sizeof(int)*nprocesses);
+  
+  
 
     //ciclo para os contadores
     for(i=0; i<nprocesses; i++) {
       splitArrayCounter[i]=0;
       splitArrayInc[i] = 0;
     }
+    
     for(i=0; i<arraysize; i++) {
-      splitArrayCounter[array[i]/step]++; //pode explodir se por causa de arredondamentos der um valor a cima do maximo
+      splitArrayCounter[(array[i]-maxMin[1])/step]++; //pode explodir se por causa de arredondamentos der um valor a cima do maximo
     }
+    
 
     //allocar matriz
     for(i=0; i<nprocesses; i++) {
       splitArray[i] = (int *)malloc(sizeof(int)*splitArrayCounter[i]);
     }
+   
 
     for(i=0; i<arraysize; i++) {
-      j = array[i]/step;
+      j = (array[i]-maxMin[1])/step;
       splitArray[j][splitArrayInc[j]++] = array[i];
     }
+    
     free(array);
+    
 
     int * probesize =(int *) malloc(sizeof(int)*nprocesses);
 
 	//Send to rank i
 	for(i=0; i<nprocesses; i++) {
+		//Barreira Em Principio nao e preciso
+		MPI_Barrier(MPI_COMM_WORLD);
 		//numbersInStep(array,arraysize, maxMin[0], maxMin[1], auxSize );
 		int auxSize = splitArrayCounter[i];
 		if(myrank == i) {
+			printf("%d - è a minha Vez \n", myrank);
 			newArraySize = auxSize;
       //calcular espaço para alocar matriz
 			for(j=0;j<nprocesses; j++) {
@@ -203,30 +217,45 @@ int main (int argc, char **argv){
 					MPI_Probe(j, ARRAY_EXCHANGE_MPI, MPI_COMM_WORLD, &status);
 					MPI_Get_count(&status, MPI_INT, &number_amount);
 					newArraySize+=number_amount;
-          probesize[j]=number_amount;
+          				probesize[j]=number_amount;
+          				printf("%d -Dei Probe ao %d e recebi %d \n", myrank , j, number_amount);
 				 }
 			 }
-       //enviar elementos para matriz
-       int k=0;
-      for(j=0;j<nprocesses; j++) {
-         MPI_Recv(&arrayNew[k], probesize[j], MPI_INT, j, ARRAY_EXCHANGE_MPI, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-         k += number_amount;
-       }
-
-       for (j=0;j<auxSize;j++) {
-         arrayNew[k] = splitArray[i][j];
-       }
-
+			 
+			 
+		       //enviar elementos para matriz
+		      int k=0;
+		      for(j=0;j<nprocesses; j++) {
+		      	if (myrank != j) {
+		      	
+				 MPI_Recv(&arrayNew[k], probesize[j], MPI_INT, j, ARRAY_EXCHANGE_MPI, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+				 printf("%d -Recebi do %d \n", myrank, j);
+				 k += probesize[j];
+			 }
+		       }
+/*
+		       for (j=0;j<auxSize;j++) {
+			 arrayNew[k++] = splitArray[i][j];
+		       }
+*/
 
 
 		 } else {
-       MPI_Send(&splitArray[i][0] , splitArrayCounter[i], MPI_INT, i, MAX_MIN_MPI, MPI_COMM_WORLD);
-     }
+			//printf("%d - Pronto a enviar para %d\n", myrank,i);
+		       MPI_Send(&splitArray[i][0] , splitArrayCounter[i], MPI_INT, i, ARRAY_EXCHANGE_MPI, MPI_COMM_WORLD);
+		       printf("%d - Enviei para %d\n", myrank,i);
+		     }
 
-     free(splitArray[i]);
+	     free(splitArray[i]);
 	}
+	
+	for (j=0;j<auxSize;j++) {
+		arrayNew[k++] = splitArray[i][j];
+	}
+	
+	
 
-
+	printf("%d - Comecei o quicksort \n", myrank);
   quicksort(arrayNew, 0, newArraySize );
 
 
