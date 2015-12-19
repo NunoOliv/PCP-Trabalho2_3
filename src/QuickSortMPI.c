@@ -10,7 +10,7 @@
 #include "QuicksortSeq.h"
 #include "AuxFuncs.h"
 
-#define ARRAY_SIZE 10		// 5 milhoes +/- 19MB
+#define ARRAY_SIZE 20		// 5 milhoes +/- 19MB
 #define N_THREADS 1
 
 //Comunication Codes
@@ -49,11 +49,48 @@ test (int *array, long double sum)
 void
 printArray (int *array, int size)
 {
+  if (size == 0)
+    {
+      printf ("[]\n");
+      return;
+    }
   printf ("[%d", array[0]);
   int i = 1;
   while (i < size)
     {
       printf (", %d", array[i]);
+      i++;
+    }
+  printf ("]\n");
+}
+
+void
+printMatrix (int **matrix, int *size, int sizeA)
+{
+
+  printf ("[");
+  printf ("[%d", matrix[0][0]);
+  int i = 1, j = 1;
+  while (i < size[0])
+    {
+      printf (", %d", matrix[0][i]);
+      i++;
+    }
+  printf ("]\n");
+  i = 1;
+  while (i < sizeA)
+    {
+      printf (",\n ");
+
+      printf ("[%d", matrix[i][0]);
+      j = 1;
+      while (j < size[i])
+	{
+	  printf (", %d", matrix[i][j]);
+	  j++;
+	}
+      printf ("]\n");
+
       i++;
     }
   printf ("]\n");
@@ -173,8 +210,7 @@ main (int argc, char **argv)
 
     }
 
-  if (myrank == 0)
-    printf ("%d - FInished MaxMin [%d,%d] \n", myrank, maxMin[0], maxMin[1]);
+
 
   //Find Splits
   int *arrayNew;
@@ -182,7 +218,9 @@ main (int argc, char **argv)
   int number_amount;
   int step = (maxMin[0] - maxMin[1]) / nprocesses;
 
-
+  if (myrank == 0)
+    printf ("%d - FInished MaxMin [%d,%d], Step = %d \n", myrank, maxMin[0],
+	    maxMin[1], step);
 
 
   //Split array
@@ -220,9 +258,12 @@ main (int argc, char **argv)
     }
 
   free (array);
+  //printf ("%d - Imprimir Split \n", myrank);
+  //printMatrix(splitArray,splitArrayCounter, nprocesses);
 
 
   int *probesize = (int *) malloc (sizeof (int) * nprocesses);
+  int **bufferArray = (int **) malloc (sizeof (int) * nprocesses);
 
   //Send to rank i
   for (i = 0; i < nprocesses; i++)
@@ -244,31 +285,20 @@ main (int argc, char **argv)
 		  MPI_Get_count (&status, MPI_INT, &number_amount);
 		  newArraySize += number_amount;
 		  probesize[j] = number_amount;
+		  bufferArray[j] =
+		    (int *) malloc (sizeof (int) * number_amount);
 		  printf ("%d -Dei Probe ao %d e recebi %d \n", myrank, j,
 			  number_amount);
-		}
-	    }
-
-
-	  //enviar elementos para matriz
-	  int k = 0;
-	  for (j = 0; j < nprocesses; j++)
-	    {
-	      if (myrank != j)
-		{
-
-		  MPI_Recv (&arrayNew[k], probesize[j], MPI_INT, j,
+		  MPI_Recv (bufferArray[j], probesize[j], MPI_INT, j,
 			    ARRAY_EXCHANGE_MPI, MPI_COMM_WORLD,
 			    MPI_STATUS_IGNORE);
-		  printf ("%d -Recebi do %d \n", myrank, j);
-		  k += probesize[j];
+		  printf ("%d -Recebi do %d - ", myrank, j);
+		  printArray (bufferArray[j], probesize[j]);
 		}
 	    }
 
-	  for (j = 0; j < auxSize; j++)
-	    {
-	      arrayNew[k++] = splitArray[i][j];
-	    }
+
+
 
 
 
@@ -279,21 +309,58 @@ main (int argc, char **argv)
 	  MPI_Send (&splitArray[i][0], splitArrayCounter[i], MPI_INT, i,
 		    ARRAY_EXCHANGE_MPI, MPI_COMM_WORLD);
 	  printf ("%d - Enviei para %d\n", myrank, i);
+	  free (splitArray[i]);
 	}
 
-      free (splitArray[i]);
+
     }
-/*
-  for (j = 0; j < auxSize; j++)
+
+
+
+
+  arrayNew = (int *) malloc (sizeof (int) * newArraySize);
+  int k = 0;
+
+//Até aqui esta bem
+  printf ("%d - Cont %d - SplitMy", myrank, splitArrayCounter[myrank]);
+  printArray (splitArray[myrank], splitArrayCounter[myrank]);
+  //printMatrix(splitArray,splitArrayCounter,nprocesses);
+
+  for (j = 0; j < splitArrayCounter[myrank]; j++)
     {
-      arrayNew[k++] = splitArray[i][j];
+
+      arrayNew[k] = splitArray[myrank][j];
+      k++;
     }
-*/
+
+  free (splitArray[myrank]);
+  free (splitArray);
+  free (splitArrayCounter);
+  printf ("%d - Mae estou aqui\n", myrank);
+  for (j = 0; j < nprocesses; j++)
+    {
+      if (myrank != j)
+	{
+	  for (i = 0; i < probesize[j]; i++)
+	    {
+
+	      arrayNew[k] = bufferArray[j][i];
+	      k++;
+	    }
+	}
+    }
+
 
 
   printf ("%d - Comecei o quicksort \n", myrank);
-  quicksort (arrayNew, 0, newArraySize);
+  printf ("%d - Pre Sort", myrank);
+  printArray (arrayNew, newArraySize);
+  //quicksort (arrayNew, 0, newArraySize);
 
+  printf ("%d - Acabei o quicksort \n", myrank);
+  //printArray(arrayNew,newArraySize);
+
+/*
 
   // high_resolution_clock::time_point end = high_resolution_clock::now();
 
@@ -311,9 +378,10 @@ main (int argc, char **argv)
   if (r == 1)
     printf ("Correto\n");
 
+*/
 
-
-  printf ("\n\n*******************************************************\n\n");
+  //printf ("\n\n*******************************************************\n\n");
+  MPI_Finalize ();
 }
 
 //
