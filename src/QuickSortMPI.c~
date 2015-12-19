@@ -381,7 +381,7 @@ main (int argc, char **argv)
 */
 
   //printf ("\n\n*******************************************************\n\n");
-  MPI_Finalize ();
+  //MPI_Finalize ();
 }
 
 //

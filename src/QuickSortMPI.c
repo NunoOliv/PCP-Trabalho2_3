@@ -355,7 +355,7 @@ main (int argc, char **argv)
   printf ("%d - Comecei o quicksort \n", myrank);
   printf ("%d - Pre Sort", myrank);
   printArray (arrayNew, newArraySize);
-  //quicksort (arrayNew, 0, newArraySize);
+  quicksort (arrayNew, 0, newArraySize);
 
   printf ("%d - Acabei o quicksort \n", myrank);
   //printArray(arrayNew,newArraySize);
@@ -381,7 +381,7 @@ main (int argc, char **argv)
 */
 
   //printf ("\n\n*******************************************************\n\n");
-  MPI_Finalize ();
+  //MPI_Finalize ();
 }
 
 //
