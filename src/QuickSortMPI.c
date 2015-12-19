@@ -298,10 +298,6 @@ main (int argc, char **argv)
 	    }
 
 
-
-
-
-
 	}
       else
 	{
@@ -336,7 +332,7 @@ main (int argc, char **argv)
   free (splitArray[myrank]);
   free (splitArray);
   free (splitArrayCounter);
-  printf ("%d - Mae estou aqui\n", myrank);
+  //printf ("%d - Mae estou aqui\n", myrank);
   for (j = 0; j < nprocesses; j++)
     {
       if (myrank != j)
@@ -358,6 +354,7 @@ main (int argc, char **argv)
   quicksort (arrayNew, 0, newArraySize);
 
   printf ("%d - Acabei o quicksort \n", myrank);
+  printArray (arrayNew, newArraySize);
   //printArray(arrayNew,newArraySize);
 
 /*

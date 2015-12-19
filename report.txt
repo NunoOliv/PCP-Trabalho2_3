@@ -8,7 +8,7 @@ module load gnu/openmpi_eth/1.8.4
 usar map-by
 
 
-mpirun -n 48 -mca btl self,sm,tcp prog
+mpirun -n 48 -mca btl self,sm,tcp mpiSort
 
 
 ver:
@@ -18,31 +18,31 @@ https://www.open-mpi.org/faq/?category=tuning					mpirun
 
 To do list:
 
-Fazer me v·rios nÛs
-Comparar com sÛ um nÛ
+Fazer me vùrios nùs
+Comparar com sù um nù
 Comparar em 2 maquinas. (641 662)
-Comparar com implementaÁ„o OpenMP
+Comparar com implementaùùo OpenMP
 
 Medir:
 	Escalabilidade
-	Custos de ComunicaÁ„o (como, n„o sei)
-	Grau de Balanceamento entre a carga dos v·rios processos.
+	Custos de Comunicaùùo (como, nùo sei)
+	Grau de Balanceamento entre a carga dos vùrios processos.
 
 
-RelatÛrio de 4 p·ginas + CÛdigo
+Relatùrio de 4 pùginas + Cùdigo
 
 
 Parametros: (20% para cada)
 	Analise teorica do algoritmo
-	Desenho e implementaÁ„o da versao MPI
-	Qualidade e quantidade de experimentaÁ„o
+	Desenho e implementaùùo da versao MPI
+	Qualidade e quantidade de experimentaùùo
 	Analise dos resultados
-	RelatÛrio
+	Relatùrio
 
 Comandos usados para testar
 
 Compilar:
 	mpicc -O3 -o mpiSort *.c
 
-Correr: 
+Correr:
 	mpirun -np 2 mpiSort
