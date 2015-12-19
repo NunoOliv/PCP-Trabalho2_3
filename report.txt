@@ -8,7 +8,7 @@ module load gnu/openmpi_eth/1.8.4
 usar map-by
 
 
-mpiriun -n 48 -mca btl self,sm,tcp prog
+mpirun -n 48 -mca btl self,sm,tcp prog
 
 
 ver:
