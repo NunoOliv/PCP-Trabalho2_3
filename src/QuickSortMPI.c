@@ -10,7 +10,7 @@
 #include "QuicksortSeq.h"
 #include "AuxFuncs.h"
 
-#define ARRAY_SIZE 20		// 5 milhoes +/- 19MB
+#define ARRAY_SIZE 4000000		// 5 milhoes +/- 19MB
 #define N_THREADS 1
 
 //Comunication Codes
@@ -51,49 +51,49 @@ printArray (int *array, int size)
 {
   if (size == 0)
     {
-      printf ("[]\n");
+      //printf ("[]\n");
       return;
     }
-  printf ("[%d", array[0]);
+  //printf ("[%d", array[0]);
   int i = 1;
   while (i < size)
     {
-      printf (", %d", array[i]);
+      //printf (", %d", array[i]);
       i++;
     }
-  printf ("]\n");
+  //printf ("]\n");
 }
 
 void
 printMatrix (int **matrix, int *size, int sizeA)
 {
 
-  printf ("[");
-  printf ("[%d", matrix[0][0]);
+  //printf ("[");
+  //printf ("[%d", matrix[0][0]);
   int i = 1, j = 1;
   while (i < size[0])
     {
-      printf (", %d", matrix[0][i]);
+      //printf (", %d", matrix[0][i]);
       i++;
     }
-  printf ("]\n");
+  //printf ("]\n");
   i = 1;
   while (i < sizeA)
     {
-      printf (",\n ");
+      //printf (",\n ");
 
-      printf ("[%d", matrix[i][0]);
+      //printf ("[%d", matrix[i][0]);
       j = 1;
       while (j < size[i])
 	{
-	  printf (", %d", matrix[i][j]);
+	  //printf (", %d", matrix[i][j]);
 	  j++;
 	}
-      printf ("]\n");
+      //printf ("]\n");
 
       i++;
     }
-  printf ("]\n");
+  //printf ("]\n");
 }
 
 
@@ -140,23 +140,28 @@ main (int argc, char **argv)
       sum += array[i];
       i++;
     }
-  printf ("myRank =%d, nProcesses = %d", myrank, nprocesses);
-  printArray (array, arraysize);
+  //printf ("myRank =%d, nProcesses = %d", myrank, nprocesses);
+  //printArray (array, arraysize);
 /*
-  printf("Concluido!\n");
-  printf("Tamanho do array: ");
+  //printf("Concluido!\n");
+  //printf("Tamanho do array: ");
   double bytes = sizeof(int) * ARRAY_SIZE;
-  if(bytes<=1024)  printf("%.3f bytes...\n", (double) bytes);
-  if(bytes>1024 && bytes <= 1024*1024)  printf("%.3f Kbytes...\n", (double) bytes/1024);
-  if(bytes>1024*1024)  printf("%.3f Mbytes...\n", (double) bytes/(1024*1024));
+  if(bytes<=1024)  //printf("%.3f bytes...\n", (double) bytes);
+  if(bytes>1024 && bytes <= 1024*1024)  //printf("%.3f Kbytes...\n", (double) bytes/1024);
+  if(bytes>1024*1024)  //printf("%.3f Mbytes...\n", (double) bytes/(1024*1024));
 
 
-  printf("A correr o quicksort...\n");
+  //printf("A correr o quicksort...\n");
 */
   //double start = omp_get_wtime(); //inicio contagem do tempo
 
 
   // high_resolution_clock::time_point t1 = high_resolution_clock::now();
+
+    double start, stop;
+
+  MPI_Barrier(MPI_COMM_WORLD);
+  start = MPI_Wtime();
 
   int maxMin[2] = { 0, 0 };
 
@@ -218,9 +223,9 @@ main (int argc, char **argv)
   int number_amount;
   int step = (maxMin[0] - maxMin[1]) / nprocesses;
 
-  if (myrank == 0)
-    printf ("%d - FInished MaxMin [%d,%d], Step = %d \n", myrank, maxMin[0],
-	    maxMin[1], step);
+  //if (myrank == 0)
+    //printf ("%d - FInished MaxMin [%d,%d], Step = %d \n", myrank, maxMin[0],maxMin[1], step);
+	    
 
 
   //Split array
@@ -269,12 +274,12 @@ main (int argc, char **argv)
   for (i = 0; i < nprocesses; i++)
     {
       //Barreira Em Principio nao e preciso
-      MPI_Barrier (MPI_COMM_WORLD);
+      //MPI_Barrier (MPI_COMM_WORLD);
       //numbersInStep(array,arraysize, maxMin[0], maxMin[1], auxSize );
       int auxSize = splitArrayCounter[i];
       if (myrank == i)
 	{
-	  printf ("%d - è a minha Vez \n", myrank);
+	  //printf ("%d - è a minha Vez \n", myrank);
 	  newArraySize = auxSize;
 	  //calcular espaço para alocar matriz
 	  for (j = 0; j < nprocesses; j++)
@@ -287,13 +292,13 @@ main (int argc, char **argv)
 		  probesize[j] = number_amount;
 		  bufferArray[j] =
 		    (int *) malloc (sizeof (int) * number_amount);
-		  printf ("%d -Dei Probe ao %d e recebi %d \n", myrank, j,
-			  number_amount);
+		  //printf ("%d -Dei Probe ao %d e recebi %d \n", myrank, j,number_amount);
+			  
 		  MPI_Recv (bufferArray[j], probesize[j], MPI_INT, j,
 			    ARRAY_EXCHANGE_MPI, MPI_COMM_WORLD,
 			    MPI_STATUS_IGNORE);
-		  printf ("%d -Recebi do %d - ", myrank, j);
-		  printArray (bufferArray[j], probesize[j]);
+		  //printf ("%d -Recebi do %d - ", myrank, j);
+		  //printArray (bufferArray[j], probesize[j]);
 		}
 	    }
 
@@ -304,7 +309,7 @@ main (int argc, char **argv)
 	  //printf("%d - Pronto a enviar para %d\n", myrank,i);
 	  MPI_Send (&splitArray[i][0], splitArrayCounter[i], MPI_INT, i,
 		    ARRAY_EXCHANGE_MPI, MPI_COMM_WORLD);
-	  printf ("%d - Enviei para %d\n", myrank, i);
+	  //printf ("%d - Enviei para %d\n", myrank, i);
 	  free (splitArray[i]);
 	}
 
@@ -318,8 +323,8 @@ main (int argc, char **argv)
   int k = 0;
 
 //Até aqui esta bem
-  printf ("%d - Cont %d - SplitMy", myrank, splitArrayCounter[myrank]);
-  printArray (splitArray[myrank], splitArrayCounter[myrank]);
+  //printf ("%d - Cont %d - SplitMy", myrank, splitArrayCounter[myrank]);
+  //printArray (splitArray[myrank], splitArrayCounter[myrank]);
   //printMatrix(splitArray,splitArrayCounter,nprocesses);
 
   for (j = 0; j < splitArrayCounter[myrank]; j++)
@@ -348,13 +353,18 @@ main (int argc, char **argv)
 
 
 
-  printf ("%d - Comecei o quicksort \n", myrank);
-  printf ("%d - Pre Sort", myrank);
-  printArray (arrayNew, newArraySize);
+  //printf ("%d - Comecei o quicksort \n", myrank);
+  //printf ("%d - Pre Sort", myrank);
+  //printArray (arrayNew, newArraySize);
   quicksort (arrayNew, 0, newArraySize);
+  
+  MPI_Barrier(MPI_COMM_WORLD);
+  stop = MPI_Wtime();
 
-  printf ("%d - Acabei o quicksort \n", myrank);
-  printArray (arrayNew, newArraySize);
+  if (myrank==0) printf("%f Please\n", (stop-start));
+  MPI_Barrier(MPI_COMM_WORLD);
+  //printf ("%d - Acabei o quicksort \n", myrank);
+  //printArray (arrayNew, newArraySize);
   //printArray(arrayNew,newArraySize);
 
 /*
@@ -365,15 +375,15 @@ main (int argc, char **argv)
   //double end = omp_get_wtime();  //fim da contagem do tempo
 
   // cout << "Concluido em " << duration << "microsegundos";
-  printf ("A iniciar funÃ§Ã£o de teste...\n");
+  //printf ("A iniciar funÃ§Ã£o de teste...\n");
 
   int r = test (array, sum);
 
-  printf ("Concluido!\n");
+  //printf ("Concluido!\n");
   if (r == 0)
-    printf ("Incorreto\n");
+    //printf ("Incorreto\n");
   if (r == 1)
-    printf ("Correto\n");
+    //printf ("Correto\n");
 
 */
 
