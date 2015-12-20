@@ -1,4 +1,4 @@
-QUICKSORT
+﻿QUICKSORT
 
 qsub -I -lnodes=2:ppn=48:r641,walltime=1:00:00
 qsub -I -lnodes=2:ppn=48:r662,walltime=1:00:00
@@ -63,7 +63,7 @@ Correr:
 	40.000.000
 
 
-	5000; //20 KB
+  5000; //20 KB
   50000; //200 KB
   4000000; //15 MB
   40000000; //152 MB
