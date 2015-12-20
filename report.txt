@@ -3,6 +3,7 @@
 qsub -I -lnodes=2:ppn=48:r641,walltime=1:00:00
 qsub -I -lnodes=2:ppn=48:r662,walltime=1:00:00
 
+
 module load gnu/openmpi_eth/1.8.4
 
 usar map-by
