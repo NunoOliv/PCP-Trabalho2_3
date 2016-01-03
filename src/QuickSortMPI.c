@@ -10,8 +10,7 @@
 #include "QuicksortSeq.h"
 #include "AuxFuncs.h"
 
-#define ARRAY_SIZE 4000000		// 5 milhoes +/- 19MB
-#define N_THREADS 1
+#define ARRAY_SIZE 40000000		// 5 milhoes +/- 19MB
 
 //Comunication Codes
 
@@ -225,7 +224,7 @@ main (int argc, char **argv)
 
   //if (myrank == 0)
     //printf ("%d - FInished MaxMin [%d,%d], Step = %d \n", myrank, maxMin[0],maxMin[1], step);
-	    
+
 
 
   //Split array
@@ -293,7 +292,7 @@ main (int argc, char **argv)
 		  bufferArray[j] =
 		    (int *) malloc (sizeof (int) * number_amount);
 		  //printf ("%d -Dei Probe ao %d e recebi %d \n", myrank, j,number_amount);
-			  
+
 		  MPI_Recv (bufferArray[j], probesize[j], MPI_INT, j,
 			    ARRAY_EXCHANGE_MPI, MPI_COMM_WORLD,
 			    MPI_STATUS_IGNORE);
@@ -357,7 +356,7 @@ main (int argc, char **argv)
   //printf ("%d - Pre Sort", myrank);
   //printArray (arrayNew, newArraySize);
   quicksort (arrayNew, 0, newArraySize);
-  
+
   MPI_Barrier(MPI_COMM_WORLD);
   stop = MPI_Wtime();
 
